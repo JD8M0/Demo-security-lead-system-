@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>D3MO — Partners in Growth Engine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#050709;--bg1:#0a0d12;--bg2:#0f1318;--bg3:#151b23;
+  --gold:#d4a017;--gold2:#f0c040;--gold-dim:#7a5c0a;
+  --blue:#1e8fff;--blue2:#4aabff;--blue-dim:#0a3a6b;
+  --red:#ff3b5c;--green:#00e5a0;--green-dim:#004d36;
+  --orange:#ff7c20;--orange-dim:#3d1f00;
+  --text1:#f0f4f8;--text2:#a8b8c8;--text3:#5a6e82;
+  --border:#1e2d3d;--border2:#2a3d52;
+  --font-head:'Rajdhani',sans-serif;
+  --font-mono:'Share Tech Mono',monospace;
+  --font-body:'Inter',sans-serif;
+}
+body{background:var(--bg0);color:var(--text1);font-family:var(--font-body);font-size:14px;min-height:100vh;overflow-x:hidden}
+#app{display:flex;flex-direction:column;min-height:100vh}
+#topbar{background:var(--bg1);border-bottom:2px solid var(--orange);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+#logo{font-family:var(--font-head);font-size:20px;font-weight:700;letter-spacing:2px;color:var(--gold2)}
+#logo span{color:var(--orange)}
+.badge{font-family:var(--font-mono);font-size:10px;color:var(--text3);border:1px solid var(--border2);padding:2px 6px;border-radius:3px}
+.pig-badge{background:var(--orange-dim);color:var(--orange);border:1px solid var(--orange);font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:3px}
+#topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.earnings-display{font-family:var(--font-mono);font-size:12px;color:var(--gold2)}
+#main{display:flex;flex:1}
+#sidebar{width:210px;background:var(--bg1);border-right:1px solid var(--border);padding:12px 0;flex-shrink:0}
+#content{flex:1;overflow-y:auto;min-width:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--text1);background:var(--bg2)}
+.nav-item.active{color:var(--gold2);border-left-color:var(--gold);background:var(--bg2)}
+.nav-section{font-family:var(--font-mono);font-size:10px;color:var(--text3);padding:12px 16px 4px;letter-spacing:1px}
+.screen{padding:20px;display:none}.screen.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
+.card-title{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--kpi-color,var(--gold))}
+.kpi-val{font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--kpi-color,var(--gold2));line-height:1}
+.kpi-label{font-size:11px;color:var(--text3);margin-top:4px}
+.kpi-sub{font-family:var(--font-mono);font-size:10px;color:var(--text2);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;transition:all .15s;text-decoration:none}
+.btn-gold{background:var(--gold);color:#000;font-weight:600}.btn-gold:hover{background:var(--gold2)}
+.btn-orange{background:var(--orange);color:#fff;font-weight:700}.btn-orange:hover{background:#ff9040}
+.btn-blue{background:var(--blue-dim);color:var(--blue2);border:1px solid var(--blue-dim)}.btn-blue:hover{background:#0d2d4a}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{color:var(--text1);border-color:var(--text3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-green{background:var(--green-dim);color:var(--green);border:1px solid #006644}.btn-green:hover{background:#005a3a}
+.btn-red{background:#3d0e16;color:var(--red);border:1px solid #5a1522}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+label{font-size:12px;color:var(--text3);font-weight:500}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border2);color:var(--text1);padding:8px 10px;border-radius:5px;font-family:var(--font-body);font-size:13px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)}
+select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:80px}
+.score-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;font-family:var(--font-head);font-size:16px;font-weight:700;flex-shrink:0}
+.score-high{background:#003d26;color:var(--green);border:1px solid #006644}
+.score-mid{background:#3d2f00;color:var(--gold2);border:1px solid var(--gold-dim)}
+.score-low{background:#3d0e16;color:var(--red);border:1px solid #5a1522}
+.tag{font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:3px;border:1px solid;white-space:nowrap}
+.tag-blue{background:var(--blue-dim);color:var(--blue2);border-color:#1a4a7a}
+.tag-green{background:var(--green-dim);color:var(--green);border-color:#005a3a}
+.tag-red{background:#2a0a10;color:var(--red);border-color:#5a1522}
+.tag-orange{background:var(--orange-dim);color:var(--orange);border-color:#5a2e00}
+.tag-gray{background:var(--bg3);color:var(--text2);border-color:var(--border2)}
+.tag-gold{background:#2a1f00;color:var(--gold2);border-color:var(--gold-dim)}
+/* LEAD CARDS */
+.lead-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;border-left:4px solid var(--lc,var(--border))}
+.lead-name{font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text1);margin-bottom:2px}
+.lead-meta{font-size:12px;color:var(--text3);margin-bottom:8px}
+.lead-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+/* SUBMIT PANEL */
+.submit-panel{background:linear-gradient(135deg,#1a0d00,#0a1a00);border:2px solid var(--orange);border-radius:10px;padding:20px;margin-bottom:12px}
+.submit-title{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--orange);margin-bottom:4px}
+.submit-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.pay-pill{display:inline-flex;align-items:center;gap:6px;background:var(--orange-dim);border:1px solid var(--orange);border-radius:20px;padding:4px 12px;font-family:var(--font-mono);font-size:12px;color:var(--orange);margin-bottom:14px}
+/* SUBMISSION FORM */
+.sub-form{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px}
+.required-note{font-size:11px;color:var(--red);font-family:var(--font-mono);margin-bottom:12px}
+.field-required::after{content:' *';color:var(--red)}
+/* STATUS BADGES */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--font-mono)}
+.status-new{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.status-ready{background:#1a0d00;color:var(--orange);border:1px solid var(--orange)}
+.status-submitted{background:var(--blue-dim);color:var(--blue2);border:1px solid var(--blue)}
+.status-approved{background:var(--green-dim);color:var(--green);border:1px solid #006644}
+.status-closed{background:#2a1f00;color:var(--gold2);border:1px solid var(--gold-dim)}
+.status-paid{background:#003d26;color:var(--green);border:1px solid var(--green)}
+/* PIPELINE */
+.pipeline-wrap{overflow-x:auto;padding-bottom:12px}
+.pipeline{display:flex;gap:10px;min-width:860px}
+.pipeline-col{flex:1;min-width:140px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.pipeline-header{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pipeline-stage{font-family:var(--font-head);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.pipeline-count{font-family:var(--font-mono);font-size:11px;background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--text2)}
+.pipeline-cards{padding:8px;display:flex;flex-direction:column;gap:6px;min-height:60px}
+.p-card{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:9px 10px;cursor:pointer;border-left:3px solid var(--lc,var(--border2))}
+.p-card:hover{border-color:var(--orange)}
+.p-card-name{font-size:12px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-card-meta{font-size:10px;color:var(--text3);margin-top:2px}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:flex-start;justify-content:flex-end}
+#modal-overlay.open{display:flex}
+#modal{width:540px;max-width:100vw;height:100vh;background:var(--bg1);border-left:1px solid var(--border);overflow-y:auto;padding:20px}
+.modal-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--text1);flex:1}
+.close-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:5px;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.section-title{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:1px;margin:14px 0 8px;text-transform:uppercase}
+.note-item{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px 10px;margin-bottom:6px}
+.note-time{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.note-text{font-size:12px;color:var(--text2);margin-top:3px}
+.ai-output{background:var(--bg3);border:1px solid var(--blue-dim);border-radius:6px;padding:12px;font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap}
+.spinner{width:14px;height:14px;border:2px solid var(--blue-dim);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-loading{display:flex;align-items:center;gap:8px;color:var(--blue2);font-family:var(--font-mono);font-size:12px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.highlight-box{background:var(--bg3);border:1px solid var(--gold-dim);border-radius:6px;padding:12px;margin-bottom:10px}
+.orange-box{background:var(--orange-dim);border:1px solid var(--orange);border-radius:6px;padding:12px;margin-bottom:10px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px}
+.funnel{display:flex;flex-direction:column;gap:5px}
+.funnel-row{display:flex;align-items:center;gap:8px}
+.chart-bar-track{flex:1;height:20px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.outreach-copy{background:var(--bg0);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:13px;line-height:1.8;color:var(--text2);white-space:pre-wrap;min-height:100px}
+.progress-bar{height:3px;background:var(--bg3);border-radius:2px;margin-bottom:20px}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
+.qa-opt-label{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text2);font-size:13px;margin-bottom:6px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:640px){#sidebar{display:none}#modal{width:100vw}}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="topbar">
+  <div id="logo">D3MO <span>×</span> PARTNERS IN GROWTH</div>
+  <div id="topbar-right">
+    <div class="pig-badge">🏦 AUS PROGRAM</div>
+    <div class="earnings-display" id="topbar-earnings">$0 earned</div>
+  </div>
+</div>
+<div id="main">
+<div id="sidebar">
+  <div class="nav-section">CORE</div>
+  <div class="nav-item active" onclick="nav('dashboard')"><span>⊞</span> Dashboard</div>
+  <div class="nav-item" onclick="nav('submit')"><span>🚀</span> Submit a Lead</div>
+  <div class="nav-item" onclick="nav('discover')"><span>◉</span> Find Leads</div>
+  <div class="nav-item" onclick="nav('pipeline')"><span>⋮⋮</span> Pipeline</div>
+  <div class="nav-section">TOOLS</div>
+  <div class="nav-item" onclick="nav('outreach')"><span>✉</span> Outreach</div>
+  <div class="nav-item" onclick="nav('assessment')"><span>◈</span> Risk Assessment</div>
+  <div class="nav-item" onclick="nav('earnings')"><span>💰</span> Earnings Tracker</div>
+  <div class="nav-section">AI</div>
+  <div class="nav-item" onclick="nav('assistant')"><span>◆</span> AI Coach</div>
+</div>
+<div id="content">
+
+<!-- DASHBOARD -->
+<div id="screen-dashboard" class="screen active">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:var(--font-head);font-size:24px;font-weight:700">Partners in Growth Engine</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px" id="dash-date"></div>
+    </div>
+    <button class="btn btn-orange" onclick="nav('submit')">🚀 Submit a Lead Now</button>
+  </div>
+  <!-- PIG Info Banner -->
+  <div class="submit-panel" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--orange);margin-bottom:4px">Allied Universal — Partners in Growth</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Know a business that needs security, technology, or janitorial services? Submit their info and earn <strong style="color:var(--gold2)">$50 per approved lead</strong> + up to <strong style="color:var(--gold2)">$5,000 if it closes.</strong> No cap on submissions.</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-family:var(--font-head);font-size:36px;font-weight:700;color:var(--gold2)" id="dash-total-earned">$0</div>
+        <div style="font-size:11px;color:var(--text3)">Total Earned</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card">
+      <div class="card-title">Recent Submissions</div>
+      <div id="dash-recent"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Submission Pipeline</div>
+      <div id="dash-funnel" class="funnel"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Quick Actions</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-orange btn-sm" onclick="nav('submit')">🚀 Submit Lead to AUS</button>
+      <button class="btn btn-gold btn-sm" onclick="nav('discover')">◉ Find New Leads</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav('outreach')">✉ Write Outreach</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav('earnings')">💰 View Earnings</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT A LEAD -->
+<div id="screen-submit" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px">🚀 Submit a Lead</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Fill out this form then click Submit — it opens the Allied Universal Partners in Growth portal pre-filled</div>
+
+  <div class="orange-box">
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="text-align:center"><div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--gold2)">$50</div><div style="font-size:10px;color:var(--text3)">Per Approved Lead</div></div>
+      <div style="text-align:center"><div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--gold2)">$250–$1,000</div><div style="font-size:10px;color:var(--text3)">If Lead Converts</div></div>
+      <div style="text-align:center"><div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--gold2)">$5,000</div><div style="font-size:10px;color:var(--text3)">Max Per Deal (US)</div></div>
+      <div style="flex:1;min-width:200px;font-size:12px;color:var(--text2);line-height:1.6;padding-left:8px;border-left:1px solid var(--orange)">
+        ⚠️ <strong style="color:var(--orange)">Critical:</strong> A valid business email is required or the lead will be automatically rejected. Make sure you have the contact's email before submitting.
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD FROM SAVED LEAD -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Load From Saved Lead (Optional)</div>
+    <div style="display:flex;gap:8px">
+      <select id="load-lead-select" style="flex:1"><option value="">-- Or load from a saved lead --</option></select>
+      <button class="btn btn-blue btn-sm" onclick="loadLeadIntoForm()">Load</button>
+    </div>
+  </div>
+
+  <!-- SUBMISSION FORM -->
+  <div class="sub-form">
+    <div class="required-note">⚠ Fields marked * are required. Lead will be rejected without a valid email address.</div>
+
+    <div style="font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">YOUR INFORMATION</div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-required">Your Full Name</label><input type="text" id="sub-your-name" placeholder="Your full name"></div>
+      <div class="form-group"><label class="field-required">Your Email</label><input type="email" id="sub-your-email" placeholder="your@email.com"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Your Employee ID / Badge #</label><input type="text" id="sub-your-id" placeholder="Allied Universal employee ID"></div>
+      <div class="form-group"><label>Your Phone</label><input type="tel" id="sub-your-phone" placeholder="Your phone number"></div>
+    </div>
+
+    <div style="font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text2);margin:16px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">BUSINESS LEAD INFORMATION</div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-required">Business Name</label><input type="text" id="sub-biz-name" placeholder="Company name"></div>
+      <div class="form-group"><label class="field-required">Business Type / Industry</label>
+        <select id="sub-biz-type">
+          <option>Apartment Complex / Residential</option>
+          <option>Warehouse / Distribution Center</option>
+          <option>Construction Company</option>
+          <option>Hotel / Hospitality</option>
+          <option>Auto Dealership</option>
+          <option>Self-Storage Facility</option>
+          <option>School / Educational Institution</option>
+          <option>Medical Facility / Clinic</option>
+          <option>Retail Shopping Center</option>
+          <option>Office Building</option>
+          <option>Industrial Facility</option>
+          <option>Restaurant / Entertainment</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-required">Business Address</label><input type="text" id="sub-biz-address" placeholder="Street address"></div>
+      <div class="form-group"><label class="field-required">City, State, ZIP</label><input type="text" id="sub-biz-city" placeholder="City, State ZIP"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-required" style="color:var(--red);font-weight:700">Contact Email ⚠ REQUIRED</label><input type="email" id="sub-contact-email" placeholder="decision-maker@business.com" style="border-color:var(--red)"></div>
+      <div class="form-group"><label>Contact Phone</label><input type="tel" id="sub-contact-phone" placeholder="Business phone"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-required">Contact Name / Decision Maker</label><input type="text" id="sub-contact-name" placeholder="Owner, Manager, or GM name"></div>
+      <div class="form-group"><label>Contact Title</label><input type="text" id="sub-contact-title" placeholder="e.g. Property Manager, Owner"></div>
+    </div>
+
+    <div style="font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text2);margin:16px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">SERVICES NEEDED</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px" id="services-checkboxes">
+      <!-- rendered by JS -->
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Why does this business need security? (What did you observe or learn?)</label>
+      <textarea id="sub-notes" placeholder="e.g. Large apartment complex with no visible security presence, frequent package theft reported. Owner mentioned wanting to upgrade from cameras only..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estimated # of Employees / Units</label>
+        <select id="sub-size">
+          <option>Under 25</option><option>25–100</option><option>100–500</option><option>500+</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>How did you find this lead?</label>
+        <select id="sub-source">
+          <option>D3MO Lead Search</option><option>Personal observation / drive-by</option>
+          <option>Friend / colleague referral</option><option>Online research</option>
+          <option>Previous contact / existing relationship</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- AI GENERATE NOTES -->
+    <div style="margin-bottom:14px">
+      <button class="btn btn-blue btn-sm" onclick="generateSubmissionNotes()">◆ AI: Write Pitch Notes For Me</button>
+      <div id="ai-notes-status" style="display:none;margin-top:8px" class="ai-loading"><div class="spinner"></div><span>Writing compelling lead notes...</span></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn btn-orange" onclick="submitToAUS()" style="font-size:15px;padding:12px 24px">🚀 Submit to Allied Universal</button>
+      <button class="btn btn-gold btn-sm" onclick="saveSubmissionRecord()">💾 Save to My Records</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearForm()">✕ Clear Form</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Clicking Submit will open pages.aus.com/partners-in-growth.html with your info ready to copy in.</div>
+  </div>
+</div>
+
+<!-- FIND LEADS -->
+<div id="screen-discover" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px">Find Leads to Submit</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">AI finds real local businesses — save them then submit to Allied Universal</div>
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group"><label>City / Area</label><input type="text" id="search-city" placeholder="e.g. Buffalo, NY" value="Buffalo, NY"></div>
+      <div class="form-group"><label>Business Category</label>
+        <select id="search-cat">
+          <option>Apartment Complexes</option><option>Warehouses & Distribution Centers</option>
+          <option>Construction Companies</option><option>Hotels & Hospitality</option>
+          <option>Auto Dealerships</option><option>Self-Storage Facilities</option>
+          <option>Schools & Education</option><option>Medical Facilities & Clinics</option>
+          <option>Retail Shopping Centers</option><option>Office Buildings</option>
+          <option>Industrial Facilities</option><option>Nightclubs & Entertainment</option>
+        </select>
+      </div>
+      <div class="form-group" style="justify-content:flex-end;padding-top:18px;flex:0 0 auto">
+        <button class="btn btn-gold" id="search-btn" onclick="runSearch()">⬢ Find Real Businesses</button>
+      </div>
+    </div>
+  </div>
+  <div id="search-status" style="display:none;margin-bottom:12px" class="ai-loading"><div class="spinner"></div><span id="search-status-text">Searching...</span></div>
+  <div id="search-results"></div>
+</div>
+
+<!-- PIPELINE -->
+<div id="screen-pipeline" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="font-family:var(--font-head);font-size:22px;font-weight:700">Submission Pipeline</div>
+    <button class="btn btn-ghost btn-sm" onclick="nav('discover')">+ Find Leads</button>
+  </div>
+  <div class="pipeline-wrap"><div class="pipeline" id="pipeline-board"></div></div>
+</div>
+
+<!-- OUTREACH -->
+<div id="screen-outreach" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px">Outreach Generator</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Get the business's email before submitting — use this to reach out first</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card">
+      <div class="card-title">Configure</div>
+      <div class="form-group" style="margin-bottom:10px"><label>Select Lead</label><select id="out-lead-select"><option value="">-- Choose a lead --</option></select></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Message Type</label>
+        <select id="out-type">
+          <option>Cold Email (Get Their Email)</option>
+          <option>LinkedIn Message</option>
+          <option>Follow-Up Email</option>
+          <option>Call Script</option>
+          <option>SMS Text</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Your Name</label><input type="text" id="out-sender" value="Allied Universal Security Specialist"></div>
+      <button class="btn btn-gold" onclick="generateOutreach()">✉ Generate</button>
+      <div id="out-status" style="display:none;margin-top:10px" class="ai-loading"><div class="spinner"></div><span>Writing message...</span></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">Message</div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" id="copy-btn" onclick="copyOutreach()" style="display:none">⧉ Copy</button>
+          <button class="btn btn-green btn-sm" id="email-btn" onclick="emailOutreach()" style="display:none">✉ Open Email</button>
+          <button class="btn btn-blue btn-sm" id="sms-btn" onclick="smsOutreach()" style="display:none">💬 SMS</button>
+        </div>
+      </div>
+      <div class="outreach-copy" id="outreach-output">Select a lead and generate a message to get their contact info for submission.</div>
+    </div>
+  </div>
+</div>
+
+<!-- RISK ASSESSMENT -->
+<div id="screen-assessment" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px">Security Risk Assessment</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Show to business owners to demonstrate value — then submit them as a lead</div>
+  <div class="card"><div class="progress-bar"><div class="progress-fill" id="qa-progress" style="width:10%"></div></div><div id="qa-container"></div></div>
+</div>
+
+<!-- EARNINGS TRACKER -->
+<div id="screen-earnings" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:16px">💰 Earnings Tracker</div>
+  <div class="kpi-grid" id="earnings-kpis"></div>
+  <div class="card">
+    <div class="card-title">Submission Log</div>
+    <div id="earnings-log"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card"><div class="card-title">Funnel</div><div id="earnings-funnel" class="funnel"></div></div>
+    <div class="card">
+      <div class="card-title">Projected Monthly Earnings</div>
+      <div id="earnings-projection"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI COACH -->
+<div id="screen-assistant" class="screen">
+  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px">◆ AI Sales Coach</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Ask anything about finding leads, getting emails, or maximizing your PIG submissions</div>
+  <div class="card" style="height:360px;overflow-y:auto" id="chat-history">
+    <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Ask me how to maximize your Partners in Growth earnings.</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <input type="text" id="chat-input" placeholder="How do I find a business owner's email?" style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="btn btn-gold" onclick="sendChat()">Send</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+    <button class="btn btn-ghost btn-sm" onclick="quickChat('How do I find the email address for a business owner or manager?')">Find emails</button>
+    <button class="btn btn-ghost btn-sm" onclick="quickChat('How many leads should I submit per week to earn $1,000/month?')">Earnings math</button>
+    <button class="btn btn-ghost btn-sm" onclick="quickChat('What types of businesses are most likely to get approved by Allied Universal?')">Best lead types</button>
+    <button class="btn btn-ghost btn-sm" onclick="quickChat('How do I write compelling lead notes to increase approval rate?')">Increase approvals</button>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal(event)">
+<div id="modal">
+  <div class="modal-header">
+    <div><div class="modal-title" id="modal-title"></div><div style="font-size:12px;color:var(--text3);margin-top:2px" id="modal-meta"></div></div>
+    <button class="close-btn" onclick="closeModalDirect()">✕</button>
+  </div>
+  <div id="modal-body"></div>
+</div>
+</div>
+
+<script>
+var leads=[];
+var chatHistory=[];
+var qaData={};var qaStep=0;
+
+var STAGES=['Saved','Ready to Submit','Submitted','Approved ($50)','Closed (Bonus)','Paid'];
+var STAGE_COLORS=['var(--text3)','var(--orange)','var(--blue2)','var(--green)','var(--gold2)','var(--green)'];
+var SERVICES=['Security Guards','Surveillance Cameras','Access Control','Janitorial Services','Remote Monitoring','Mobile Patrols','Event Security','Technology Solutions'];
+
+// Storage
+async function saveLeads(){
+  try{
+    if(window.storage)await window.storage.set('d3mo-pig-v4',JSON.stringify(leads));
+    else localStorage.setItem('d3mo-pig-v4',JSON.stringify(leads));
+  }catch(e){try{localStorage.setItem('d3mo-pig-v4',JSON.stringify(leads))}catch(x){}}
+}
+async function loadLeads(){
+  try{
+    if(window.storage){var r=await window.storage.get('d3mo-pig-v4');if(r&&r.value){leads=JSON.parse(r.value);return;}}
+    var ls=localStorage.getItem('d3mo-pig-v4');if(ls)leads=JSON.parse(ls);
+  }catch(e){leads=[];}
+}
+
+function scoreClass(s){return s>=7?'score-high':s>=4?'score-mid':'score-low'}
+function scoreColor(s){return s>=7?'var(--green)':s>=4?'var(--gold)':'var(--red)'}
+function stageColor(s){var i=STAGES.indexOf(s);return i>=0?STAGE_COLORS[i]:'var(--text3)';}
+function getStatusClass(s){
+  var m={'Saved':'status-new','Ready to Submit':'status-ready','Submitted':'status-submitted','Approved ($50)':'status-approved','Closed (Bonus)':'status-closed','Paid':'status-paid'};
+  return m[s]||'status-new';
+}
+
+function totalEarned(){
+  return leads.reduce(function(a,l){
+    var e=0;
+    if(l.status==='Approved ($50)')e=50;
+    if(l.status==='Closed (Bonus)')e=50+(l.bonusAmount||0);
+    if(l.status==='Paid')e=50+(l.bonusAmount||0);
+    return a+e;
+  },0);
+}
+
+function nav(screen){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){if(n.getAttribute('onclick')==="nav('"+screen+"')")n.classList.add('active');});
+  updateTopbarEarnings();
+  if(screen==='dashboard')renderDashboard();
+  if(screen==='pipeline')renderPipeline();
+  if(screen==='outreach')populateOutreachSelect();
+  if(screen==='earnings')renderEarnings();
+  if(screen==='assessment')initAssessment();
+  if(screen==='submit')populateLoadSelect();
+}
+
+function updateTopbarEarnings(){
+  var e=totalEarned();
+  document.getElementById('topbar-earnings').textContent='$'+e.toLocaleString()+' earned';
+}
+
+// RENDER SERVICES CHECKBOXES
+function renderServicesCheckboxes(){
+  document.getElementById('services-checkboxes').innerHTML=SERVICES.map(function(s){
+    return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2);background:var(--bg3);padding:5px 10px;border-radius:4px;border:1px solid var(--border2)">'+
+      '<input type="checkbox" name="service" value="'+s+'" style="width:auto"> '+s+'</label>';
+  }).join('');
+}
+
+function getCheckedServices(){
+  return Array.from(document.querySelectorAll('input[name="service"]:checked')).map(function(x){return x.value;});
+}
+
+function populateLoadSelect(){
+  var sel=document.getElementById('load-lead-select');
+  sel.innerHTML='<option value="">-- Or load from a saved lead --</option>'+
+    leads.map(function(l){return '<option value="'+l.id+'">'+l.name+' ('+l.city+')</option>';}).join('');
+  renderServicesCheckboxes();
+}
+
+function loadLeadIntoForm(){
+  var lid=document.getElementById('load-lead-select').value;if(!lid)return;
+  var l=leads.find(function(x){return x.id===lid;});if(!l)return;
+  document.getElementById('sub-biz-name').value=l.name||'';
+  document.getElementById('sub-biz-address').value=l.address||'';
+  document.getElementById('sub-biz-city').value=l.city||'';
+  document.getElementById('sub-contact-phone').value=l.phone||'';
+  document.getElementById('sub-contact-email').value=l.contactEmail||'';
+  document.getElementById('sub-contact-name').value=l.contactName||'';
+  document.getElementById('sub-notes').value=l.summary||'';
+  // set services
+  var svcs=l.services||[];
+  document.querySelectorAll('input[name="service"]').forEach(function(cb){cb.checked=svcs.includes(cb.value);});
+  alert('Lead loaded! Make sure to add the contact email before submitting.');
+}
+
+function clearForm(){
+  ['sub-your-name','sub-your-email','sub-your-id','sub-your-phone','sub-biz-name','sub-biz-address','sub-biz-city','sub-contact-email','sub-contact-phone','sub-contact-name','sub-contact-title','sub-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.querySelectorAll('input[name="service"]').forEach(function(cb){cb.checked=false;});
+}
+
+async function generateSubmissionNotes(){
+  var bizName=document.getElementById('sub-biz-name').value;
+  var bizType=document.getElementById('sub-biz-type').value;
+  var city=document.getElementById('sub-biz-city').value;
+  var svcs=getCheckedServices();
+  if(!bizName){alert('Enter the business name first.');return;}
+  document.getElementById('ai-notes-status').style.display='flex';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:'Write a compelling 3-4 sentence lead qualification note for an Allied Universal Partners in Growth referral submission. Business: '+bizName+', Type: '+bizType+', Location: '+city+', Services needed: '+(svcs.join(', ')||'Security Guards, Surveillance')+'. Write from the perspective of someone who observed or researched this business. Mention specific security risks for this type of business. Be specific and professional — this note helps the AUS sales team prioritize and approve the lead. Return only the note text, no preamble.'}]})
+    });
+    var data=await resp.json();
+    var text=data.content.map(function(c){return c.text||'';}).join('');
+    document.getElementById('sub-notes').value=text;
+  }catch(e){alert('AI error: '+e.message);}
+  document.getElementById('ai-notes-status').style.display='none';
+}
+
+function submitToAUS(){
+  var email=document.getElementById('sub-contact-email').value.trim();
+  var bizName=document.getElementById('sub-biz-name').value.trim();
+  var yourName=document.getElementById('sub-your-name').value.trim();
+  if(!email){alert('⚠ Contact email is required! The lead will be automatically rejected without it.');return;}
+  if(!bizName){alert('Please enter the business name.');return;}
+  if(!yourName){alert('Please enter your name.');return;}
+
+  // Save the submission record
+  saveSubmissionRecord(true);
+
+  // Build a cheat sheet for the user to copy into the AUS form
+  var svcs=getCheckedServices();
+  var summary='SUBMISSION READY — Copy this into the Partners in Growth form:\n\n'+
+    '— YOUR INFO —\n'+
+    'Name: '+yourName+'\n'+
+    'Email: '+document.getElementById('sub-your-email').value+'\n'+
+    'Employee ID: '+document.getElementById('sub-your-id').value+'\n\n'+
+    '— LEAD INFO —\n'+
+    'Business: '+bizName+'\n'+
+    'Type: '+document.getElementById('sub-biz-type').value+'\n'+
+    'Address: '+document.getElementById('sub-biz-address').value+', '+document.getElementById('sub-biz-city').value+'\n'+
+    'Contact: '+document.getElementById('sub-contact-name').value+' ('+document.getElementById('sub-contact-title').value+')\n'+
+    'Email: '+email+'\n'+
+    'Phone: '+document.getElementById('sub-contact-phone').value+'\n'+
+    'Services: '+svcs.join(', ')+'\n\n'+
+    '— NOTES —\n'+
+    document.getElementById('sub-notes').value;
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(summary).then(function(){
+    // Open AUS portal
+    window.open('https://pages.aus.com/partners-in-growth.html','_blank');
+    alert('✅ Your submission info has been copied to clipboard!\n\nThe Allied Universal Partners in Growth portal is opening. Paste your info into the form fields.\n\nRemember: The contact email field is the most critical — do not leave it blank!');
+  }).catch(function(){
+    window.open('https://pages.aus.com/partners-in-growth.html','_blank');
+    alert('Opening AUS portal. Use the info you filled out above to complete the form.\n\nMost important: Contact email = '+email);
+  });
+}
+
+function saveSubmissionRecord(fromSubmit){
+  var bizName=document.getElementById('sub-biz-name').value.trim();
+  if(!bizName)return;
+  var svcs=getCheckedServices();
+  var status=fromSubmit?'Submitted':'Ready to Submit';
+  // Check if already exists
+  var existing=leads.find(function(l){return l.name===bizName&&l.submissionRecord;});
+  if(existing){existing.status=status;existing.lastUpdated=new Date().toISOString();saveLeads();updateTopbarEarnings();if(!fromSubmit)alert('Record updated!');return;}
+  var record={
+    id:'lead_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    name:bizName,
+    category:document.getElementById('sub-biz-type').value,
+    address:document.getElementById('sub-biz-address').value,
+    city:document.getElementById('sub-biz-city').value,
+    phone:document.getElementById('sub-contact-phone').value,
+    contactEmail:document.getElementById('sub-contact-email').value,
+    contactName:document.getElementById('sub-contact-name').value,
+    contactTitle:document.getElementById('sub-contact-title').value,
+    services:svcs,
+    notes:document.getElementById('sub-notes').value,
+    source:document.getElementById('sub-source').value,
+    score:7,
+    summary:document.getElementById('sub-notes').value,
+    status:status,
+    submissionRecord:true,
+    bonusAmount:0,
+    submittedDate:fromSubmit?new Date().toISOString():null,
+    dateAdded:new Date().toISOString(),
+    lastUpdated:new Date().toISOString(),
+    callLog:[]
+  };
+  leads.push(record);saveLeads();updateTopbarEarnings();
+  if(!fromSubmit)alert('Saved to your pipeline as "Ready to Submit".');
+}
+
+// DASHBOARD
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var total=leads.length;
+  var submitted=leads.filter(function(l){return ['Submitted','Approved ($50)','Closed (Bonus)','Paid'].includes(l.status);}).length;
+  var approved=leads.filter(function(l){return ['Approved ($50)','Closed (Bonus)','Paid'].includes(l.status);}).length;
+  var paid=totalEarned();
+  document.getElementById('dash-total-earned').textContent='$'+paid.toLocaleString();
+  document.getElementById('kpi-grid').innerHTML=
+    '<div class="kpi" style="--kpi-color:var(--blue2)"><div class="kpi-val">'+total+'</div><div class="kpi-label">Leads Tracked</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--orange)"><div class="kpi-val">'+submitted+'</div><div class="kpi-label">Submitted to AUS</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--green)"><div class="kpi-val">'+approved+'</div><div class="kpi-label">Approved</div><div class="kpi-sub">×$50 = $'+(approved*50).toLocaleString()+'</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--gold2)"><div class="kpi-val">$'+paid.toLocaleString()+'</div><div class="kpi-label">Total Earned</div></div>';
+  var recent=leads.slice(-5).reverse();
+  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(function(l){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.name+'</div>'+
+      '<div style="font-size:11px;color:var(--text3)">'+l.category+'</div></div>'+
+      '<span class="status-badge '+getStatusClass(l.status)+'">'+l.status+'</span>'+
+      '<button class="btn btn-ghost btn-sm" onclick="openLead(\''+l.id+'\')">→</button>'+
+    '</div>';
+  }).join(''):'<div style="color:var(--text3);font-size:12px;padding:10px 0">No leads yet. Start with Find Leads or Submit a Lead.</div>';
+  renderFunnel('dash-funnel');
+}
+
+function renderFunnel(id){
+  var counts=STAGES.map(function(s){return leads.filter(function(l){return l.status===s;}).length;});
+  var max=Math.max.apply(null,counts.concat([1]));
+  document.getElementById(id).innerHTML=STAGES.map(function(s,i){
+    return '<div class="funnel-row">'+
+      '<div style="width:110px;font-size:11px;color:var(--text3);text-align:right;flex-shrink:0">'+s+'</div>'+
+      '<div class="chart-bar-track"><div class="chart-bar-fill" style="width:'+Math.max(4,counts[i]/max*100)+'%;background:'+STAGE_COLORS[i]+';opacity:.8"></div></div>'+
+      '<div style="font-family:var(--font-mono);font-size:11px;color:var(--text2);width:20px">'+counts[i]+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+// PIPELINE
+function renderPipeline(){
+  document.getElementById('pipeline-board').innerHTML=STAGES.map(function(stage,si){
+    var stagLeads=leads.filter(function(l){return l.status===stage;});
+    return '<div class="pipeline-col">'+
+      '<div class="pipeline-header"><span class="pipeline-stage" style="color:'+STAGE_COLORS[si]+'">'+stage+'</span><span class="pipeline-count">'+stagLeads.length+'</span></div>'+
+      '<div class="pipeline-cards">'+stagLeads.map(function(l){
+        return '<div class="p-card" style="--lc:'+STAGE_COLORS[si]+'" onclick="openLead(\''+l.id+'\')">'+
+          '<div class="p-card-name">'+l.name+'</div>'+
+          '<div class="p-card-meta">'+l.category+'</div>'+
+          (stage==='Approved ($50)'||stage==='Closed (Bonus)'||stage==='Paid'?'<div style="font-family:var(--font-mono);font-size:10px;color:var(--gold2);margin-top:3px">$'+(stage==='Approved ($50)'?50:(50+(l.bonusAmount||0))).toLocaleString()+'</div>':'')+
+        '</div>';
+      }).join('')+'</div></div>';
+  }).join('');
+}
+
+// LEAD MODAL
+function openLead(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  document.getElementById('modal-title').textContent=l.name;
+  document.getElementById('modal-meta').textContent=l.category+' · '+l.city;
+  var earned=l.status==='Approved ($50)'?50:(['Closed (Bonus)','Paid'].includes(l.status)?(50+(l.bonusAmount||0)):0);
+  document.getElementById('modal-body').innerHTML=
+    '<div class="orange-box" style="margin-bottom:14px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+        '<div>'+
+          '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">SUBMISSION STATUS</div>'+
+          '<select class="status-select" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text1);padding:6px 10px;border-radius:4px;font-size:13px" onchange="updateStatus(\''+l.id+'\',this.value)">'+
+            STAGES.map(function(s){return '<option'+(l.status===s?' selected':'')+'>'+s+'</option>';}).join('')+
+          '</select>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-family:var(--font-head);font-size:24px;font-weight:700;color:var(--gold2)">$'+earned.toLocaleString()+'</div>'+
+          '<div style="font-size:10px;color:var(--text3)">Earned from this lead</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="section-title">Contact Info</div>'+
+    '<div style="font-size:13px;color:var(--text2);line-height:2;margin-bottom:10px">'+
+      '📍 '+(l.address?l.address+', '+l.city:l.city||'No address')+'<br>'+
+      '📞 '+(l.phone?'<a href="tel:'+l.phone.replace(/\D/g,'')+'" style="color:var(--green);font-family:var(--font-mono)">'+l.phone+'</a>':'<span style="color:var(--text3)">No phone</span>')+'<br>'+
+      '✉ '+(l.contactEmail?'<span style="color:var(--gold2);font-family:var(--font-mono)">'+l.contactEmail+'</span>':'<span style="color:var(--red)">⚠ No email — required for submission!</span>')+'<br>'+
+      '👤 '+(l.contactName||'No contact name')+(l.contactTitle?' · '+l.contactTitle:'')+
+    '</div>'+
+    '<div class="form-group" style="margin-bottom:10px">'+
+      '<label style="color:var(--red);font-weight:700">Update Contact Email (⚠ Required for submission)</label>'+
+      '<div style="display:flex;gap:6px"><input type="email" id="email-edit" placeholder="contact@business.com" value="'+(l.contactEmail||'')+'" style="flex:1;border-color:var(--red)"><button class="btn btn-green btn-sm" onclick="saveEmail(\''+l.id+'\')">Save</button></div>'+
+    '</div>'+
+    (l.submissionRecord?
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'+
+        '<button class="btn btn-orange btn-sm" onclick="resubmitLead(\''+l.id+'\')">🚀 Submit to AUS</button>'+
+        '<button class="btn btn-gold btn-sm" onclick="loadAndGoSubmit(\''+l.id+'\')">✏ Edit & Resubmit</button>'+
+      '</div>':
+      '<button class="btn btn-orange btn-sm" style="margin-bottom:14px" onclick="loadAndGoSubmit(\''+l.id+'\')">🚀 Submit This Lead to AUS</button>'+
+    '')+
+    '<div class="section-title">Services Identified</div>'+
+    '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'+(l.services||[]).map(function(s){return '<span class="tag tag-blue">'+s+'</span>';}).join('')+'</div>'+
+    (l.notes||l.summary?'<div class="section-title">Notes / Lead Summary</div><div class="ai-output" style="margin-bottom:12px">'+(l.notes||l.summary)+'</div>':'')+
+    '<div class="section-title">Bonus Amount (if closed)</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px">'+
+      '<input type="number" id="bonus-input" placeholder="Bonus $" value="'+(l.bonusAmount||0)+'" style="max-width:140px">'+
+      '<button class="btn btn-green btn-sm" onclick="saveBonus(\''+l.id+'\')">Save Bonus</button>'+
+    '</div>'+
+    '<div class="section-title">Call Log / Notes</div>'+
+    '<div id="modal-notes" style="margin-bottom:8px">'+renderNotes(l)+'</div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<input type="text" id="note-input" placeholder="Add note or call outcome..." style="flex:1">'+
+      '<button class="btn btn-ghost btn-sm" onclick="addNote(\''+l.id+'\')">Add</button>'+
+    '</div>'+
+    '<div class="divider"></div>'+
+    '<button class="btn btn-red btn-sm" onclick="deleteLead(\''+l.id+'\')">✕ Remove Lead</button>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function renderNotes(l){
+  var log=l.callLog||l.notes_arr||[];
+  if(!log.length)return'<div style="color:var(--text3);font-size:12px">No notes yet.</div>';
+  return log.slice().reverse().map(function(n){return '<div class="note-item"><div class="note-time">'+n.time+'</div><div class="note-text">'+n.text+'</div></div>';}).join('');
+}
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal-overlay').classList.remove('open');}
+function updateStatus(id,status){var l=leads.find(function(x){return x.id===id;});if(!l)return;l.status=status;l.lastUpdated=new Date().toISOString();saveLeads();updateTopbarEarnings();}
+function saveEmail(id){var l=leads.find(function(x){return x.id===id;});if(!l)return;l.contactEmail=document.getElementById('email-edit').value;saveLeads();alert('Email saved! This lead is now ready to submit.');}
+function saveBonus(id){var l=leads.find(function(x){return x.id===id;});if(!l)return;l.bonusAmount=parseFloat(document.getElementById('bonus-input').value)||0;saveLeads();updateTopbarEarnings();alert('Bonus saved!');}
+function addNote(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  var txt=document.getElementById('note-input').value.trim();if(!txt)return;
+  if(!l.callLog)l.callLog=[];
+  l.callLog.push({time:new Date().toLocaleString(),text:txt});
+  document.getElementById('note-input').value='';
+  document.getElementById('modal-notes').innerHTML=renderNotes(l);
+  saveLeads();
+}
+function deleteLead(id){if(!confirm('Remove this lead?'))return;leads=leads.filter(function(l){return l.id!==id;});saveLeads();updateTopbarEarnings();closeModalDirect();}
+function loadAndGoSubmit(id){
+  closeModalDirect();
+  nav('submit');
+  setTimeout(function(){
+    document.getElementById('load-lead-select').value=id;
+    loadLeadIntoForm();
+  },100);
+}
+function resubmitLead(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  if(!l.contactEmail){alert('⚠ Add a contact email first — it is required!');return;}
+  l.status='Submitted';l.submittedDate=new Date().toISOString();saveLeads();updateTopbarEarnings();
+  window.open('https://pages.aus.com/partners-in-growth.html','_blank');
+  alert('Opening Allied Universal portal. Submit the lead for: '+l.name+'\nContact email: '+l.contactEmail);
+  closeModalDirect();
+}
+
+// SEARCH
+async function runSearch(){
+  var city=document.getElementById('search-city').value.trim()||'Buffalo, NY';
+  var cat=document.getElementById('search-cat').value;
+  var btn=document.getElementById('search-btn');
+  var statusEl=document.getElementById('search-status');
+  var statusTxt=document.getElementById('search-status-text');
+  btn.disabled=true;btn.textContent='Searching...';statusEl.style.display='flex';
+  document.getElementById('search-results').innerHTML='';
+  var steps=['Searching the web for real businesses...','Finding contact information...','Identifying security needs...','Scoring submission potential...'];
+  var si=0;var interval=setInterval(function(){statusTxt.textContent=steps[si++%steps.length];},2000);
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:2000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:'Search the web and find 6 REAL currently operating businesses in '+city+' in the "'+cat+'" category. These are leads for Allied Universal security services. For each real business found, return a JSON array with: name (real business name), address (real address), phone (real phone if findable), website, industry ("'+cat+'"), score (1-10 security opportunity), risks (array of 2-3 specific security risks), services (array of 2-3 from: Security Guards, Surveillance Cameras, Access Control, Janitorial Services, Remote Monitoring, Mobile Patrols), summary (2 sentences why they need security), estimatedValue (annual contract value in dollars), emailTip (tip on how to find their decision maker email). Return ONLY valid JSON array.'}]
+      })
+    });
+    clearInterval(interval);
+    var data=await resp.json();
+    var text=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+    text=text.replace(/```json|```/g,'').trim();
+    var s=text.indexOf('[');var e=text.lastIndexOf(']');
+    if(s===-1)throw new Error('No business data found');
+    var businesses=JSON.parse(text.slice(s,e+1));
+    window._searchedLeads=businesses.map(function(b){
+      return{id:'lead_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:b.name,address:b.address,phone:b.phone,website:b.website,category:b.industry||cat,city:city,score:b.score||6,risks:b.risks||[],services:b.services||[],summary:b.summary||'',estimatedValue:b.estimatedValue||5000,emailTip:b.emailTip||'',status:'Saved',contactEmail:'',contactName:'',submissionRecord:true,bonusAmount:0,callLog:[],dateAdded:new Date().toISOString(),lastUpdated:new Date().toISOString()};
+    });
+    document.getElementById('search-results').innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+        '<div style="font-family:var(--font-mono);font-size:12px;color:var(--green)">✓ '+window._searchedLeads.length+' real businesses found in '+city+'</div>'+
+        '<button class="btn btn-gold btn-sm" onclick="saveAllSearched()">⊕ Save All</button>'+
+      '</div>'+
+      window._searchedLeads.map(function(l,i){
+        return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;border-left:4px solid '+scoreColor(l.score)+'">'+
+          '<div style="display:flex;align-items:flex-start;gap:12px">'+
+            '<div class="score-badge '+scoreClass(l.score)+'">'+l.score+'</div>'+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-family:var(--font-head);font-size:16px;font-weight:700">'+l.name+'</div>'+
+              '<div style="font-size:12px;color:var(--text3);margin-bottom:4px">'+l.address+' · '+(l.phone||'No phone found')+'</div>'+
+              '<div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">'+l.summary+'</div>'+
+              (l.emailTip?'<div style="font-size:11px;color:var(--gold2);background:var(--bg3);padding:5px 8px;border-radius:4px;margin-bottom:8px">💡 Email tip: '+l.emailTip+'</div>':'')+
+              '<div style="display:flex;gap:5px;flex-wrap:wrap">'+
+                (l.risks||[]).map(function(r){return '<span class="tag tag-red">⚠ '+r+'</span>';}).join('')+
+                (l.services||[]).map(function(s){return '<span class="tag tag-blue">'+s+'</span>';}).join('')+
+              '</div>'+
+            '</div>'+
+            '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">'+
+              '<div style="font-family:var(--font-mono);font-size:11px;color:var(--gold2)">$'+(l.estimatedValue||0).toLocaleString()+'/yr</div>'+
+              '<button class="btn btn-green btn-sm" id="sbtn-'+i+'" onclick="saveSingleLead('+i+',this)">+ Save</button>'+
+              '<button class="btn btn-orange btn-sm" onclick="saveAndSubmit('+i+')">🚀 Submit</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+  }catch(err){
+    clearInterval(interval);
+    document.getElementById('search-results').innerHTML='<div style="color:var(--red);background:var(--bg3);border-radius:6px;padding:12px;font-size:13px">Error: '+err.message+'</div>';
+  }
+  btn.disabled=false;btn.textContent='⬢ Find Real Businesses';statusEl.style.display='none';
+}
+function saveSingleLead(i,btn){
+  var l=window._searchedLeads[i];
+  if(!leads.find(function(x){return x.name===l.name&&x.city===l.city;})){leads.push(l);saveLeads();}
+  btn.textContent='✓ Saved';btn.disabled=true;btn.className='btn btn-ghost btn-sm';
+}
+function saveAllSearched(){
+  if(!window._searchedLeads)return;
+  window._searchedLeads.forEach(function(l){if(!leads.find(function(x){return x.name===l.name&&x.city===l.city;}))leads.push(l);});
+  saveLeads();
+  document.querySelectorAll('[id^=sbtn-]').forEach(function(btn){btn.textContent='✓ Saved';btn.disabled=true;btn.className='btn btn-ghost btn-sm';});
+}
+function saveAndSubmit(i){
+  saveSingleLead(i,document.getElementById('sbtn-'+i));
+  nav('submit');
+  setTimeout(function(){
+    var l=window._searchedLeads[i];
+    var found=leads.find(function(x){return x.name===l.name&&x.city===l.city;});
+    if(found){document.getElementById('load-lead-select').value=found.id;loadLeadIntoForm();}
+  },150);
+}
+
+// OUTREACH
+function populateOutreachSelect(){
+  document.getElementById('out-lead-select').innerHTML='<option value="">-- Choose a lead --</option>'+
+    leads.map(function(l){return '<option value="'+l.id+'">'+l.name+' ('+l.city+')</option>';}).join('');
+}
+async function generateOutreach(){
+  var lid=document.getElementById('out-lead-select').value;
+  var type=document.getElementById('out-type').value;
+  var sender=document.getElementById('out-sender').value||'Allied Universal Specialist';
+  if(!lid){alert('Select a lead.');return;}
+  var l=leads.find(function(x){return x.id===lid;});if(!l)return;
+  document.getElementById('out-status').style.display='flex';
+  document.getElementById('outreach-output').textContent='Generating...';
+  ['copy-btn','email-btn','sms-btn'].forEach(function(id){document.getElementById(id).style.display='none';});
+  var prompts={
+    'Cold Email (Get Their Email)':'Write a cold email from '+sender+' to the decision-maker at '+l.name+', a '+l.category+' in '+l.city+'. The goal is to introduce yourself and get a response — ideally their direct email or phone. Security risks to mention: '+(l.risks||[]).join(', ')+'. Keep under 150 words. Start with Subject: line. Be warm and specific, not salesy. End with a simple question to get them to reply.',
+    'LinkedIn Message':'Write a LinkedIn message from '+sender+' to a decision-maker at '+l.name+', a '+l.category+'. Max 250 characters. Mention one specific risk. Goal: get their direct email.',
+    'Follow-Up Email':'Write a follow-up email from '+sender+' to '+l.name+' after no response. Mention their security risks: '+(l.risks||[]).join(', ')+'. Keep it short, add value, ask a simple question. Under 100 words. Include Subject: line.',
+    'Call Script':'Write a call script for '+sender+' calling '+l.name+', a '+l.category+' in '+l.city+'. Goal: introduce yourself and get their email to send more info. Include opener, one qualifying question about their security, and a close asking for email. Keep it under 60 seconds.',
+    'SMS Text':'Write an SMS text from '+sender+' to '+l.name+'. Max 160 characters. Professional, mention one security risk specific to '+l.category+', include a call to action to call or email back.'
+  };
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompts[type]||prompts['Cold Email (Get Their Email)']}]})
+    });
+    var data=await resp.json();
+    var text=data.content.map(function(c){return c.text||'';}).join('');
+    document.getElementById('outreach-output').textContent=text;
+    document.getElementById('copy-btn').style.display='';
+    if(type.includes('Email'))document.getElementById('email-btn').style.display='';
+    if(type==='SMS Text')document.getElementById('sms-btn').style.display='';
+  }catch(e){document.getElementById('outreach-output').textContent='Error: '+e.message;}
+  document.getElementById('out-status').style.display='none';
+}
+function copyOutreach(){
+  navigator.clipboard.writeText(document.getElementById('outreach-output').textContent).then(function(){
+    var btn=document.getElementById('copy-btn');btn.textContent='✓ Copied!';setTimeout(function(){btn.textContent='⧉ Copy';},1500);
+  });
+}
+function emailOutreach(){
+  var text=document.getElementById('outreach-output').textContent;
+  var lines=text.split('\n');var subject='Security Services — Allied Universal',body=text;
+  if(lines[0].startsWith('Subject:')){subject=lines[0].replace('Subject:','').trim();body=lines.slice(2).join('\n');}
+  window.open('mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body));
+}
+function smsOutreach(){
+  var text=document.getElementById('outreach-output').textContent;
+  window.open('sms:?body='+encodeURIComponent(text));
+}
+
+// EARNINGS
+function renderEarnings(){
+  var approved=leads.filter(function(l){return ['Approved ($50)','Closed (Bonus)','Paid'].includes(l.status);});
+  var closed=leads.filter(function(l){return ['Closed (Bonus)','Paid'].includes(l.status);});
+  var total=totalEarned();
+  var pending=leads.filter(function(l){return l.status==='Submitted';}).length*50;
+  document.getElementById('earnings-kpis').innerHTML=
+    '<div class="kpi" style="--kpi-color:var(--green)"><div class="kpi-val">'+approved.length+'</div><div class="kpi-label">Approved Leads</div><div class="kpi-sub">×$50 each</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--gold2)"><div class="kpi-val">'+closed.length+'</div><div class="kpi-label">Deals Closed</div><div class="kpi-sub">Bonus earned</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--gold2)"><div class="kpi-val">$'+total.toLocaleString()+'</div><div class="kpi-label">Total Earned</div></div>'+
+    '<div class="kpi" style="--kpi-color:var(--orange)"><div class="kpi-val">$'+pending.toLocaleString()+'</div><div class="kpi-label">Pending</div><div class="kpi-sub">Awaiting approval</div></div>';
+  // Log
+  var submitted=leads.filter(function(l){return l.status!=='Saved';});
+  document.getElementById('earnings-log').innerHTML=submitted.length?
+    '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<tr style="color:var(--text3);font-family:var(--font-mono);font-size:10px"><th style="text-align:left;padding:4px 8px">BUSINESS</th><th style="text-align:left;padding:4px 8px">STATUS</th><th style="text-align:right;padding:4px 8px">EARNED</th><th style="text-align:left;padding:4px 8px">DATE</th></tr>'+
+    submitted.map(function(l){
+      var e=l.status==='Approved ($50)'?50:['Closed (Bonus)','Paid'].includes(l.status)?(50+(l.bonusAmount||0)):0;
+      return '<tr style="border-top:1px solid var(--border);cursor:pointer" onclick="openLead(\''+l.id+'\')">'+
+        '<td style="padding:6px 8px;color:var(--text1);font-weight:500">'+l.name+'</td>'+
+        '<td style="padding:6px 8px"><span class="status-badge '+getStatusClass(l.status)+'">'+l.status+'</span></td>'+
+        '<td style="padding:6px 8px;text-align:right;font-family:var(--font-mono);color:'+(e>0?'var(--gold2)':'var(--text3)')+'">$'+e.toLocaleString()+'</td>'+
+        '<td style="padding:6px 8px;color:var(--text3);font-family:var(--font-mono);font-size:10px">'+(l.submittedDate?new Date(l.submittedDate).toLocaleDateString():'—')+'</td>'+
+      '</tr>';
+    }).join('')+'</table>':
+    '<div style="color:var(--text3);font-size:12px;padding:10px">No submissions yet. Submit leads to start earning.</div>';
+  renderFunnel('earnings-funnel');
+  // Projection
+  var weekly=leads.filter(function(l){return !['Saved'].includes(l.status);}).length/4||0;
+  var projected=Math.round(weekly*50);
+  document.getElementById('earnings-projection').innerHTML=
+    '<div style="margin-bottom:12px">'+
+      '<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:4px">AT CURRENT RATE</div>'+
+      '<div style="font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--gold2)">$'+projected.toLocaleString()+'/mo</div>'+
+      '<div style="font-size:11px;color:var(--text3)">from approval bonuses only</div>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--text2);line-height:1.8">'+
+      '<div>📌 Submit <strong style="color:var(--text1)">4 leads/week</strong> → $800/mo minimum</div>'+
+      '<div>📌 Submit <strong style="color:var(--text1)">10 leads/week</strong> → $2,000/mo minimum</div>'+
+      '<div>📌 One closed deal → <strong style="color:var(--gold2)">up to $5,000 bonus</strong></div>'+
+      '<div style="margin-top:8px;color:var(--text3)">Payment processed ~30 days after validation.</div>'+
+    '</div>';
+}
+
+// RISK ASSESSMENT
+var QA_QUESTIONS=[
+  {q:'Business name and type',type:'text',key:'bizName',ph:'e.g. Oakwood Apartments'},
+  {q:'How many people does this location serve daily?',type:'select',key:'size',opts:['Under 25','25–100','100–500','500+']},
+  {q:'Operating hours',type:'select',key:'hours',opts:['Daytime only (9–5)','Extended hours','24/7','Varies']},
+  {q:'Security incidents in the past 2 years?',type:'select',key:'incidents',opts:['No incidents','Minor theft/vandalism','Break-in or assault','Multiple incidents']},
+  {q:'Current security measures?',type:'select',key:'current',opts:['None','Basic locks only','Cameras only','Security guard','Full system']},
+  {q:'Estimated value of on-site assets?',type:'select',key:'assets',opts:['Under $50K','$50K–$250K','$250K–$1M','Over $1M']},
+  {q:'Primary security concern?',type:'select',key:'concern',opts:['Theft / burglary','Employee safety','Liability','Vandalism','Access control']},
+  {q:'Foot traffic level?',type:'select',key:'traffic',opts:['Low (staff only)','Moderate','High','Very high']},
+];
+function initAssessment(){qaStep=0;qaData={};renderQAStep();}
+function renderQAStep(){
+  document.getElementById('qa-progress').style.width=(qaStep/QA_QUESTIONS.length*100+10)+'%';
+  if(qaStep>=QA_QUESTIONS.length){generateRiskReport();return;}
+  var q=QA_QUESTIONS[qaStep];
+  document.getElementById('qa-container').innerHTML=
+    '<div style="font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text1);margin-bottom:14px">Q'+(qaStep+1)+' of '+QA_QUESTIONS.length+': '+q.q+'</div>'+
+    (q.type==='text'?'<input type="text" id="qa-answer" placeholder="'+(q.ph||'')+'" style="margin-bottom:16px">':
+    '<div style="margin-bottom:16px">'+q.opts.map(function(o){return '<label class="qa-opt-label"><input type="radio" name="qa-opt" value="'+o+'" style="width:auto"> '+o+'</label>';}).join('')+'</div>')+
+    '<div style="display:flex;gap:8px">'+
+      (qaStep>0?'<button class="btn btn-ghost btn-sm" onclick="qaBack()">← Back</button>':'')+
+      '<button class="btn btn-gold" onclick="qaNext(\''+q.key+'\',\''+q.type+'\')">'+(qaStep===QA_QUESTIONS.length-1?'Generate Report →':'Next →')+'</button>'+
+    '</div>';
+}
+function qaNext(key,type){
+  var val='';
+  if(type==='text'){val=document.getElementById('qa-answer').value.trim();if(!val){alert('Please answer.');return;}}
+  else{var r=document.querySelector('input[name="qa-opt"]:checked');if(!r){alert('Please select an option.');return;}val=r.value;}
+  qaData[key]=val;qaStep++;renderQAStep();
+}
+function qaBack(){qaStep=Math.max(0,qaStep-1);renderQAStep();}
+async function generateRiskReport(){
+  document.getElementById('qa-progress').style.width='100%';
+  document.getElementById('qa-container').innerHTML='<div style="text-align:center;padding:30px"><div class="ai-loading" style="justify-content:center;margin-bottom:12px"><div class="spinner"></div><span>Generating security report...</span></div></div>';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:'You are a professional security risk analyst for Allied Universal. Generate a security risk assessment for this business: '+JSON.stringify(qaData)+'. Return JSON: score (0-100), grade (A-F), summary (3 sentences), vulnerabilities (array of 4), recommendations (array of 4 specific Allied Universal service recommendations with explanation), urgency (Low/Medium/High/Critical), estimatedMonthlyCost (string). Return ONLY valid JSON.'}]})
+    });
+    var data=await resp.json();
+    var text=data.content.map(function(c){return c.text||'';}).join('').replace(/```json|```/g,'').trim();
+    var r=JSON.parse(text);
+    var sc=r.score>=70?'var(--red)':r.score>=40?'var(--gold)':'var(--green)';
+    document.getElementById('qa-container').innerHTML=
+      '<div style="text-align:center;margin-bottom:20px">'+
+        '<div style="font-family:var(--font-head);font-size:64px;font-weight:700;color:'+sc+';line-height:1">'+r.score+'</div>'+
+        '<div style="font-size:12px;color:var(--text3)">Security Risk Score</div>'+
+        '<div style="margin-top:8px;display:flex;gap:8px;justify-content:center">'+
+          '<span class="tag" style="font-size:12px;border-color:'+sc+';color:'+sc+'">Grade: '+r.grade+'</span>'+
+          '<span class="tag" style="font-size:12px;border-color:'+sc+';color:'+sc+'">Urgency: '+r.urgency+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="ai-output" style="margin-bottom:14px">'+r.summary+'</div>'+
+      '<div class="section-title">Vulnerabilities</div>'+
+      (r.vulnerabilities||[]).map(function(v){return '<div style="display:flex;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div><span style="font-size:12px;color:var(--text2)">'+v+'</span></div>';}).join('')+
+      '<div class="section-title">Allied Universal Services Recommended</div>'+
+      (r.recommendations||[]).map(function(rec){return '<div style="display:flex;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:4px;flex-shrink:0"></div><span style="font-size:12px;color:var(--text2)">'+rec+'</span></div>';}).join('')+
+      '<div class="orange-box" style="margin-top:14px">'+
+        '<div style="font-family:var(--font-mono);font-size:10px;color:var(--orange);margin-bottom:4px">ESTIMATED MONTHLY INVESTMENT</div>'+
+        '<div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--gold2)">'+r.estimatedMonthlyCost+'</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-top:6px">Submit this business as a lead → earn $50 approved + up to $5,000 if they sign</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;margin-top:14px">'+
+        '<button class="btn btn-orange btn-sm" onclick="nav(\'submit\')">🚀 Submit This Business</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="initAssessment()">New Assessment</button>'+
+      '</div>';
+  }catch(e){
+    document.getElementById('qa-container').innerHTML='<div style="color:var(--red);font-size:13px">Error: '+e.message+'</div><button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="initAssessment()">Try Again</button>';
+  }
+}
+
+// AI CHAT
+function sendChat(){var i=document.getElementById('chat-input');var m=i.value.trim();if(!m)return;i.value='';quickChat(m);}
+function quickChat(msg){chatHistory.push({role:'user',content:msg});addChatBubble('user',msg);callChatAPI();}
+async function callChatAPI(){
+  addChatBubble('ai','');
+  var bubbles=document.querySelectorAll('.chat-bubble-ai');var last=bubbles[bubbles.length-1];
+  var sys='You are an expert coach helping someone maximize earnings from the Allied Universal Partners in Growth lead referral program. They earn $50 per approved lead and $250-$5,000 if a lead closes into a security contract. Help them find businesses, get contact emails (required for submission), write pitches, and submit as many quality leads as possible. Be specific, practical, and focused on maximizing their income. Current leads tracked: '+leads.length+'. Total earned so far: $'+totalEarned()+'.';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:chatHistory.slice(-10)})
+    });
+    var data=await resp.json();
+    var text=data.content.map(function(c){return c.text||'';}).join('');
+    if(last)last.textContent=text;
+    chatHistory.push({role:'assistant',content:text});
+  }catch(e){if(last)last.textContent='Error: '+e.message;}
+  var h=document.getElementById('chat-history');h.scrollTop=h.scrollHeight;
+}
+function addChatBubble(role,text){
+  var h=document.getElementById('chat-history');
+  var d=document.createElement('div');d.style.cssText='margin-bottom:10px;display:flex;flex-direction:column;align-items:'+(role==='user'?'flex-end':'flex-start');
+  var b=document.createElement('div');if(role==='ai')b.className='chat-bubble-ai';
+  b.style.cssText='max-width:85%;padding:9px 12px;border-radius:8px;font-size:13px;line-height:1.6;'+(role==='user'?'background:var(--blue-dim);color:var(--blue2);border:1px solid var(--blue-dim)':'background:var(--bg3);color:var(--text2);border:1px solid var(--border)');
+  b.textContent=text||'Thinking...';d.appendChild(b);h.appendChild(d);h.scrollTop=h.scrollHeight;
+}
+
+async function init(){
+  await loadLeads();
+  renderDashboard();
+  updateTopbarEarnings();
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  renderServicesCheckboxes();
+}
+init();
+</script>
+</body>
+</html>
