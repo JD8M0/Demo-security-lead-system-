@@ -837,7 +837,7 @@ async function runSearch(){
     if(s===-1)throw new Error('No business data found');
     var businesses=JSON.parse(text.slice(s,e+1));
     window._searchedLeads=businesses.map(function(b){
-      return{id:'lead_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:b.name,address:b.address,phone:b.phone,website:b.website,category:b.industry||cat,city:city,score:b.score||6,risks:b.risks||[],services:b.services||[],summary:b.summary||'',estimatedValue:b.estimatedValue||5000,emailTip:b.emailTip||'',status:'Saved',contactEmail:'',contactName:'',submissionRecord:true,bonusAmount:0,callLog:[],dateAdded:new Date().toISOString(),lastUpdated:new Date().toISOString()};
+      return{id:'lead_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:b.name,address:b.address,phone:b.phone,website:b.website,category:b.industry||cat,city:city,score:b.score||6,risks:b.risks||[],services:b.services||[],summary:b.summary||'',estimatedValue:b.estimatedValue||5000,emailTip:b.emailTip||'',status:'Discovered',contactEmail:'',contactName:'',submissionRecord:true,bonusAmount:0,callLog:[],dateAdded:new Date().toISOString(),lastUpdated:new Date().toISOString()};
     });
     document.getElementById('search-results').innerHTML=
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
