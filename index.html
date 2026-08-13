@@ -451,8 +451,29 @@ var leads=[];
 var chatHistory=[];
 var qaData={};var qaStep=0;
 
-var STAGES=['Saved','Ready to Submit','Submitted','Approved ($50)','Closed (Bonus)','Paid'];
-var STAGE_COLORS=['var(--text3)','var(--orange)','var(--blue2)','var(--green)','var(--gold2)','var(--green)'];
+async function secureAIFetch(options){
+  if(!window.d3moSupabase)throw new Error('Lead research service is still starting. Try again in a moment.');
+  var session=(await window.d3moSupabase.auth.getSession()).data.session;
+  if(!session)throw new Error('Sign in before running lead research.');
+  var response=await fetch('https://asxgjgcphhtbewlhmbog.supabase.co/functions/v1/research-assistant',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+session.access_token,
+      'apikey':'sb_publishable_lhHJwomvquf44EQUD6UBvA_37fo1YfR'
+    },
+    body:options.body
+  });
+  if(!response.ok){
+    var detail='Lead research request failed';
+    try{var payload=await response.clone().json();detail=payload.error||payload.message||detail;}catch(e){}
+    throw new Error(detail);
+  }
+  return response;
+}
+
+var STAGES=['Discovered','Researching','Needs Contact','Needs Verification','Qualified','Ready for Manual Submission','Manually Submitted','Accepted','Contract Negotiation','Closed','Rejected','Paid'];
+var STAGE_COLORS=['var(--text3)','var(--blue2)','var(--orange)','var(--orange)','var(--green)','var(--gold2)','var(--blue2)','var(--green)','var(--gold2)','var(--green)','var(--red)','var(--green)'];
 var SERVICES=['Security Guards','Surveillance Cameras','Access Control','Janitorial Services','Remote Monitoring','Mobile Patrols','Event Security','Technology Solutions'];
 
 // Storage
@@ -473,15 +494,15 @@ function scoreClass(s){return s>=7?'score-high':s>=4?'score-mid':'score-low'}
 function scoreColor(s){return s>=7?'var(--green)':s>=4?'var(--gold)':'var(--red)'}
 function stageColor(s){var i=STAGES.indexOf(s);return i>=0?STAGE_COLORS[i]:'var(--text3)';}
 function getStatusClass(s){
-  var m={'Saved':'status-new','Ready to Submit':'status-ready','Submitted':'status-submitted','Approved ($50)':'status-approved','Closed (Bonus)':'status-closed','Paid':'status-paid'};
+  var m={'Discovered':'status-new','Researching':'status-submitted','Needs Contact':'status-ready','Needs Verification':'status-ready','Qualified':'status-approved','Ready for Manual Submission':'status-ready','Manually Submitted':'status-submitted','Accepted':'status-approved','Contract Negotiation':'status-closed','Closed':'status-closed','Rejected':'status-new','Paid':'status-paid','Saved':'status-new','Ready to Submit':'status-ready','Submitted':'status-submitted','Approved ($50)':'status-approved','Closed (Bonus)':'status-closed'};
   return m[s]||'status-new';
 }
 
 function totalEarned(){
   return leads.reduce(function(a,l){
     var e=0;
-    if(l.status==='Approved ($50)')e=50;
-    if(l.status==='Closed (Bonus)')e=50+(l.bonusAmount||0);
+    if(l.status==='Accepted'||l.status==='Approved ($50)')e=50;
+    if(l.status==='Closed'||l.status==='Closed (Bonus)')e=50+(l.bonusAmount||0);
     if(l.status==='Paid')e=50+(l.bonusAmount||0);
     return a+e;
   },0);
@@ -554,7 +575,7 @@ async function generateSubmissionNotes(){
   if(!bizName){alert('Enter the business name first.');return;}
   document.getElementById('ai-notes-status').style.display='flex';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await secureAIFetch({
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:'Write a compelling 3-4 sentence lead qualification note for an Allied Universal Partners in Growth referral submission. Business: '+bizName+', Type: '+bizType+', Location: '+city+', Services needed: '+(svcs.join(', ')||'Security Guards, Surveillance')+'. Write from the perspective of someone who observed or researched this business. Mention specific security risks for this type of business. Be specific and professional — this note helps the AUS sales team prioritize and approve the lead. Return only the note text, no preamble.'}]})
     });
@@ -574,7 +595,7 @@ function submitToAUS(){
   if(!yourName){alert('Please enter your name.');return;}
 
   // Save the submission record
-  saveSubmissionRecord(true);
+  saveSubmissionRecord(false);
 
   // Build a cheat sheet for the user to copy into the AUS form
   var svcs=getCheckedServices();
@@ -609,7 +630,7 @@ function saveSubmissionRecord(fromSubmit){
   var bizName=document.getElementById('sub-biz-name').value.trim();
   if(!bizName)return;
   var svcs=getCheckedServices();
-  var status=fromSubmit?'Submitted':'Ready to Submit';
+  var status='Ready for Manual Submission';
   // Check if already exists
   var existing=leads.find(function(l){return l.name===bizName&&l.submissionRecord;});
   if(existing){existing.status=status;existing.lastUpdated=new Date().toISOString();saveLeads();updateTopbarEarnings();if(!fromSubmit)alert('Record updated!');return;}
@@ -631,21 +652,21 @@ function saveSubmissionRecord(fromSubmit){
     status:status,
     submissionRecord:true,
     bonusAmount:0,
-    submittedDate:fromSubmit?new Date().toISOString():null,
+    submittedDate:null,
     dateAdded:new Date().toISOString(),
     lastUpdated:new Date().toISOString(),
     callLog:[]
   };
   leads.push(record);saveLeads();updateTopbarEarnings();
-  if(!fromSubmit)alert('Saved to your pipeline as "Ready to Submit".');
+  if(!fromSubmit)alert('Saved to your pipeline as "Ready for Manual Submission".');
 }
 
 // DASHBOARD
 function renderDashboard(){
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var total=leads.length;
-  var submitted=leads.filter(function(l){return ['Submitted','Approved ($50)','Closed (Bonus)','Paid'].includes(l.status);}).length;
-  var approved=leads.filter(function(l){return ['Approved ($50)','Closed (Bonus)','Paid'].includes(l.status);}).length;
+  var submitted=leads.filter(function(l){return ['Manually Submitted','Accepted','Contract Negotiation','Closed','Paid','Submitted','Approved ($50)','Closed (Bonus)'].includes(l.status);}).length;
+  var approved=leads.filter(function(l){return ['Accepted','Contract Negotiation','Closed','Paid','Approved ($50)','Closed (Bonus)'].includes(l.status);}).length;
   var paid=totalEarned();
   document.getElementById('dash-total-earned').textContent='$'+paid.toLocaleString();
   document.getElementById('kpi-grid').innerHTML=
@@ -782,7 +803,7 @@ function loadAndGoSubmit(id){
 function resubmitLead(id){
   var l=leads.find(function(x){return x.id===id;});if(!l)return;
   if(!l.contactEmail){alert('⚠ Add a contact email first — it is required!');return;}
-  l.status='Submitted';l.submittedDate=new Date().toISOString();saveLeads();updateTopbarEarnings();
+  l.status='Ready for Manual Submission';l.submittedDate=null;l.lastUpdated=new Date().toISOString();saveLeads();updateTopbarEarnings();
   window.open('https://pages.aus.com/partners-in-growth.html','_blank');
   alert('Opening Allied Universal portal. Submit the lead for: '+l.name+'\nContact email: '+l.contactEmail);
   closeModalDirect();
@@ -800,7 +821,7 @@ async function runSearch(){
   var steps=['Searching the web for real businesses...','Finding contact information...','Identifying security needs...','Scoring submission potential...'];
   var si=0;var interval=setInterval(function(){statusTxt.textContent=steps[si++%steps.length];},2000);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await secureAIFetch({
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',max_tokens:2000,
@@ -894,7 +915,7 @@ async function generateOutreach(){
     'SMS Text':'Write an SMS text from '+sender+' to '+l.name+'. Max 160 characters. Professional, mention one security risk specific to '+l.category+', include a call to action to call or email back.'
   };
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await secureAIFetch({
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompts[type]||prompts['Cold Email (Get Their Email)']}]})
     });
@@ -1003,7 +1024,7 @@ async function generateRiskReport(){
   document.getElementById('qa-progress').style.width='100%';
   document.getElementById('qa-container').innerHTML='<div style="text-align:center;padding:30px"><div class="ai-loading" style="justify-content:center;margin-bottom:12px"><div class="spinner"></div><span>Generating security report...</span></div></div>';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    var resp=await secureAIFetch({method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:'You are a professional security risk analyst for Allied Universal. Generate a security risk assessment for this business: '+JSON.stringify(qaData)+'. Return JSON: score (0-100), grade (A-F), summary (3 sentences), vulnerabilities (array of 4), recommendations (array of 4 specific Allied Universal service recommendations with explanation), urgency (Low/Medium/High/Critical), estimatedMonthlyCost (string). Return ONLY valid JSON.'}]})
     });
     var data=await resp.json();
@@ -1046,7 +1067,7 @@ async function callChatAPI(){
   var bubbles=document.querySelectorAll('.chat-bubble-ai');var last=bubbles[bubbles.length-1];
   var sys='You are an expert coach helping someone maximize earnings from the Allied Universal Partners in Growth lead referral program. They earn $50 per approved lead and $250-$5,000 if a lead closes into a security contract. Help them find businesses, get contact emails (required for submission), write pitches, and submit as many quality leads as possible. Be specific, practical, and focused on maximizing their income. Current leads tracked: '+leads.length+'. Total earned so far: $'+totalEarned()+'.';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    var resp=await secureAIFetch({method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:chatHistory.slice(-10)})
     });
     var data=await resp.json();
@@ -1065,13 +1086,12 @@ function addChatBubble(role,text){
 }
 
 async function init(){
-  await loadLeads();
   renderDashboard();
   updateTopbarEarnings();
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   renderServicesCheckboxes();
 }
-init();
+window.d3moAppInit=init;
 </script>
 <script src="supabase-bridge.js"></script> 
 </body>
